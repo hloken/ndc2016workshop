@@ -1,19 +1,17 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using MoviesLibrary;
 using MoviesWebApp.ViewModels;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http.Authentication;
 
 namespace MoviesWebApp.Controllers
 {
     // TODO: allow anonymous access
     public class AccountController : Controller
     {
-        private MovieIdentityService _identityService;
+        private readonly MovieIdentityService _identityService;
 
         public AccountController(MovieIdentityService identityService)
         {
@@ -29,20 +27,34 @@ namespace MoviesWebApp.Controllers
         [HttpPost]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
-            // TODO: validate password
-            // create list of claims w/ sub claim from username
-            // call into MovieIdentityService to get app specific claims and merge into claims list
-            // create claims identity and claims principal
-            // call signin on authentication manager to issue cookie
-            // redirect to return url, or back to home page
+            if (model.Username == model.Password)
+            {
+                var claims = new List<Claim>
+                {
+                    new Claim("sub", model.Username)
+                };
+                claims.AddRange(_identityService.GetClaimsForUser(model.Username));
 
+                var ci = new ClaimsIdentity(claims, "password", "name", "role" );
+                var cp = new ClaimsPrincipal(ci);
+
+                await HttpContext.Authentication.SignInAsync("Cookies", cp);
+
+                if (model.ReturnUrl != null)
+                {
+                    LocalRedirect(model.ReturnUrl);
+                }
+
+                return RedirectToAction("Index", "Home");
+            }
+            
             ModelState.AddModelError("", "Invalid username or password");
             return View();
         }
 
         public async Task<IActionResult> Logout()
         {
-            // TODO: remove authentication cookie by calling singout on authentication manager
+            await HttpContext.Authentication.SignOutAsync("Cookies");
 
             return RedirectToAction("Index", "Home");
         }

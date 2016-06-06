@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 
 namespace MoviesWebApp
 {
@@ -65,6 +66,15 @@ namespace MoviesWebApp
             // TODO: configure the cookie authentication middleware
             // set automatic authenticate and challenge
             // set login and access denied paths ("/Account/Login" and "/Account/Denied")
+
+            app.UseCookieAuthentication(new CookieAuthenticationOptions
+            {
+                AuthenticationScheme = "Cookies",
+                AutomaticAuthenticate = true,
+                AutomaticChallenge = true,
+                LoginPath = new PathString("/Account/Login"),
+                AccessDeniedPath = new PathString("/Account/Denied")
+            });
 
             app.UseMvc(routes =>
             {
