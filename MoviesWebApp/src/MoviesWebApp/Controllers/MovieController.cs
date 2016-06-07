@@ -23,7 +23,7 @@ namespace MoviesWebApp.Controllers
             return View(movies);
         }
 
-        // TODO: apply the search authorization policy
+        [Authorize("SearchPolicy")]
         public IActionResult Search(string searchTerm = null)
         {
             var result = searchTerm != null ? _movies.Search(searchTerm) : new MovieSearchResult();

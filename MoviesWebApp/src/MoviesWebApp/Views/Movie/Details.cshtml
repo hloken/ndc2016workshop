@@ -65,11 +65,12 @@
     </h1>
 </div>
 
-@*TODO: hide this div if user is not allowed to review the movie*@
+@if (await authorization.AuthorizeAsync(User, Model, MoviesWebApp.Authorization.MovieOperations.Review))
+{ 
     <div class="row search-form">
         <a asp-action="New" asp-controller="Review" asp-route-movieId="@Model.Id" class="btn btn-primary">Write a review</a>
     </div>
-
+}
 @if (Model.Reviews.Any())
 {
 <div class="row">
@@ -92,8 +93,10 @@
                     <td>@review.Stars</td>
                     <td>@review.Comment</td>
                     <td>
-                        @*TODO: hide this link if user is not allowed to edit the review*@
-                        <a asp-action="Edit" asp-controller="Review" asp-route-id="@review.Id" class="btn btn-primary">edit</a>
+                        @if (await authorization.AuthorizeAsync(User, review, MoviesWebApp.Authorization.ReviewOperations.Edit))
+                        {
+                            <a asp-action="Edit" asp-controller="Review" asp-route-id="@review.Id" class="btn btn-primary">edit</a>
+                        }
                     </td>
                 </tr>
             }

@@ -12,13 +12,15 @@ namespace MoviesWebApp.Controllers
     public class ReviewController : Controller
     {
         private MovieService _movies;
+        private readonly IAuthorizationService _authorizationService;
         private ReviewService _reviews;
 
         // TODO: inject and store the authorization service
-        public ReviewController(ReviewService reviews, MovieService movies)
+        public ReviewController(ReviewService reviews, MovieService movies, IAuthorizationService authorizationService)
         {
             _reviews = reviews;
             _movies = movies;
+            _authorizationService = authorizationService;
         }
 
         [HttpGet]
@@ -30,7 +32,10 @@ namespace MoviesWebApp.Controllers
                 return RedirectToAction("Index", "Movies");
             }
 
-            // TODO: authorize the user to create reviews for the movie
+            if (!(await _authorizationService.AuthorizeAsync(User, movie, Authorization.MovieOperations.Review)))
+            {
+                return Challenge();
+            }
 
             return View(new NewReviewModel() {
                 MovieId = movieId,
@@ -78,7 +83,10 @@ namespace MoviesWebApp.Controllers
                 return RedirectToAction("Index", "Movie");
             }
 
-            // TODO: authorize the user to edit the review
+            if (!(await _authorizationService.AuthorizeAsync(User, review, Authorization.ReviewOperations.Edit)))
+            {
+                return Challenge();
+            }
 
             var movie = _movies.GetDetails(review.MovieId);
 
@@ -102,7 +110,10 @@ namespace MoviesWebApp.Controllers
                 return RedirectToAction("Index", "Movie");
             }
 
-            // TODO: authorize the user to edit the review
+            if (!(await _authorizationService.AuthorizeAsync(User, review, Authorization.ReviewOperations.Edit)))
+            {
+                return Challenge();
+            }
 
             if (ModelState.IsValid)
             {

@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using MoviesWebApp.Authorization;
 
 namespace MoviesWebApp
 {
@@ -32,16 +33,31 @@ namespace MoviesWebApp
         {
             services.AddMoviesLibrary();
 
-            // TODO: add authorization services to DI
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("SearchPolicy", builder =>
+                {
+                    builder.RequireAuthenticatedUser();
+                    builder.RequireAssertion(ctx =>
+                    {
+                        if (ctx.User.HasClaim("role", "Admin") || ctx.User.HasClaim("role", "Customer"))
+                        {
+                            return true;
+                        }
 
-            // TODO: configure a "SearchPolicy" to only allow authenticated customers and admins
+                        return false;
+                    });
+                });
+            });
 
-            // TODO: register the authorization handlers in DI
+            services.AddTransient<IAuthorizationHandler, MovieAuthorizationHandler>();
+            services.AddTransient<IAuthorizationHandler, ReviewAuthorizationHandler>();
 
             // Add framework services.
             services.AddMvc(options =>
             {
-                // TODO: add a AuthorizeFilter that uses a policy that prevents anonymous access
+                var policy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
+                options.Filters.Add(new AuthorizeFilter(policy));
             });
         }
 

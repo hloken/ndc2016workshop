@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace MoviesWebApp.Controllers
 {
-    // TODO: allow anonymous access
+    [AllowAnonymous]
     public class HomeController : Controller
     {
         public IActionResult Index()

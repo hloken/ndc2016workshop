@@ -16,9 +16,11 @@ namespace MoviesWebApp.Authorization
 
     public class MovieAuthorizationHandler : AuthorizationHandler<OperationAuthorizationRequirement, MovieDetails>
     {
-        // TODO: inject and store the ReviewPermisssionService
-        public MovieAuthorizationHandler()
+        private readonly ReviewPermisssionService _reviewPermissionService;
+
+        public MovieAuthorizationHandler(ReviewPermissionService reviewPermissionService)
         {
+            _reviewPermissionService = reviewPermissionService;
         }
 
         protected override void Handle(
@@ -26,11 +28,18 @@ namespace MoviesWebApp.Authorization
             OperationAuthorizationRequirement requirement,
             MovieDetails movie)
         {
-            // TODO: allow reviewers to review movies
+            if (requirement == MovieOperations.Review)
+            {
+                if (context.User.HasClaim("role", "Reviewer"))
+                {
+                    var allowed = _reviewPermissionService.GetAllowedCountries(context.User);
 
-
-            // TODO: only allow reviewers to edit the movie if the movie is from the  
-            // country the review is allowed to review, as indicated by the ReviewPermisssionService
+                    if (allowed.Contains(movie.CountryName))
+                    {
+                        context.Succeed(requirement);
+                    }
+                }
+            }
         }
     }
 }

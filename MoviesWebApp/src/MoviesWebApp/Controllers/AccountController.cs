@@ -4,11 +4,12 @@ using MoviesWebApp.ViewModels;
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Authentication;
 
 namespace MoviesWebApp.Controllers
 {
-    // TODO: allow anonymous access
+    [AllowAnonymous]
     public class AccountController : Controller
     {
         private readonly MovieIdentityService _identityService;
